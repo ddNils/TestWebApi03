@@ -45,12 +45,13 @@ namespace TestWebApi03.WebApi.Controllers
 
 
         // POST: api/Rooms
-        public void Post([FromBody]Models.RoomViewModel room)
+        public HttpResponseMessage Post(HttpRequestMessage request, [FromBody]Models.RoomViewModel room)
         {
             if (room != null)
             {
-                _RoomRepo.AddRoom(room);
+                return request.CreateResponse(System.Net.HttpStatusCode.Created,  _RoomRepo.AddRoom(room));
             }
+            return null;
         }
 
         // PUT: api/Rooms/5

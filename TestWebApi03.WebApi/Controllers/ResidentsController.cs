@@ -62,7 +62,13 @@ namespace TestWebApi03.WebApi.Controllers
         // DELETE: api/Residents/5
         public void Delete(int id)
         {
-            
+            if (_RoomManagement.DeleteInhabitant(id) == true)
+            {
+                Ok(id);
+            } else
+            {
+                NotFound();
+            }            
         }
     }
 }

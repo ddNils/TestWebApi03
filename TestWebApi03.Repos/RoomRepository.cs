@@ -59,7 +59,9 @@ namespace TestWebApi03.Repos
             //res.Add(res1);
             //return res.AsQueryable();
 
-            return _db.Residents.AsQueryable<IResident>();
+            return _db.Residents.SqlQuery("SELECT * FROM Residents WHERE Room_Id IS NULL").AsQueryable<IResident>();
+
+            //return _db.Residents.AsQueryable<IResident>();
         }
 
         public IQueryable<IRoom> GetAllRooms()
@@ -152,6 +154,7 @@ namespace TestWebApi03.Repos
 
             // Was passiert mit den Bewohnern? - Logik hier implementieren!
             _db.Rooms.Remove(room);
+            _db.SaveChanges();
             return true;
         }
 
@@ -179,12 +182,24 @@ namespace TestWebApi03.Repos
             if (room == null)
                 return null;
 
-            var res = _db.Residents.Where(r => r.Id == dweller.Id).FirstOrDefault();
+            Resident res = _db.Residents.Where(r => r.Id == dweller.Id).FirstOrDefault();
 
             if (res != null)
             {
                 //if (!room.Inhabitants.Contains(res))
                     room.Inhabitants.Add(res);
+            } else
+            {
+                //var res2 = AddResident(dweller);
+                res = new Resident()
+                {
+                    Id = dweller.Id,
+                    JobDescription = dweller.JobDescription,
+                    LastName = dweller.LastName,
+                    Name = dweller.Name,
+                    Title = dweller.Title
+                };
+                room.Inhabitants.Add(res);
             }
             _db.SaveChanges();
 
@@ -204,9 +219,25 @@ namespace TestWebApi03.Repos
                 //if (!room.Inhabitants.Contains(res))
                 room.Inhabitants.Remove(res);
             }
-
+            _db.SaveChanges();
             return room;
         }
+
+        public bool DeleteInhabitant(int inhabitantId)
+        {
+            var res = _db.Residents.Where(r => r.Id == inhabitantId).FirstOrDefault();
+
+            if (res == null)
+            {
+                return false;
+            }
+
+            _db.Residents.Remove(res);
+            _db.SaveChanges();
+
+            return true;
+        }
+
 
         protected void Dispose(bool disposing)
         {

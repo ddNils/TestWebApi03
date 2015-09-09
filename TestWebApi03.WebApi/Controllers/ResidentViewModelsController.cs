@@ -6,8 +6,11 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.ModelBinding;
-using System.Web.Http.OData;
-using System.Web.Http.OData.Routing;
+using System.Web.OData;
+using System.Web.OData.Query;
+using System.Web.OData.Routing;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using TestWebApi03.Repos;
 using TestWebApi03.WebApi.Models;
 
@@ -23,15 +26,26 @@ namespace TestWebApi03.WebApi.Controllers
     builder.EntitySet<ResidentViewModel>("ResidentViewModels");
     config.Routes.MapODataServiceRoute("odata", "odata", builder.GetEdmModel());
     */
+        [EnableQuery(MaxNodeCount = 100, PageSize = 20)]
     public class ResidentViewModelsController : ODataController
     {
-        private RoomManagementRepository db;
+        private IRoomManagementRepository db;
+        
+        public ResidentViewModelsController(IRoomManagementRepository rmp)
+        {
+            db = rmp;
+        }
 
         // GET: odata/ResidentViewModels
-        [EnableQuery(MaxNodeCount = 100)]
-        public IQueryable<Contracts.IResident> GetResidents()
+        [EnableQuery]
+        public IQueryable<Models.ResidentViewModel> GetResidentViewModels()
         {
-            //var res = db.GetAllResidents().Take(100).ToList();
+
+            //return db.GetAllResidents();
+
+            Mapper.CreateMap<Contracts.IResident, ResidentViewModel>();
+
+            var res = db.GetAllResidents().ProjectTo<ResidentViewModel>();
             //List<ResidentViewModel> list = new List<ResidentViewModel>();
 
             //foreach (var r in res)
@@ -45,14 +59,33 @@ namespace TestWebApi03.WebApi.Controllers
             //        Title = r.Title
             //    });
             //}
-            return db.GetAllResidents();
+            return res;
         }
 
         // GET: odata/ResidentViewModels(5)
         [EnableQuery]
-        public SingleResult<Contracts.IResident> GetResidentViewModel([FromODataUri] int key)
+        public SingleResult<Models.ResidentViewModel> GetResidentViewModel([FromODataUri] int key)
         {
-            return SingleResult.Create(db.GetAllResidents().Where(r => r.Id == key));
+            // Really need to do this via automapper (better in Repo)
+            Mapper.CreateMap<Contracts.IResident, ResidentViewModel>();
+
+
+            var res = db.GetAllResidents().Where(r => r.Id == key).Project().To<ResidentViewModel>();
+            //List<ResidentViewModel> list = new List<ResidentViewModel>();
+
+            //foreach (var r in res)
+            //{
+            //    list.Add(new ResidentViewModel()
+            //    {
+            //        Id = r.Id,
+            //        JobDescription = r.JobDescription,
+            //        LastName = r.LastName,
+            //        Name = r.Name,
+            //        Title = r.Title
+            //    });
+            //}
+
+            return SingleResult.Create(res);
         }
 
         // PUT: odata/ResidentViewModels(5)
@@ -158,19 +191,6 @@ namespace TestWebApi03.WebApi.Controllers
 
         //    return StatusCode(HttpStatusCode.NoContent);
         //}
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
-        private bool ResidentViewModelExists(int key)
-        {
-            return db.GetAllResidents().Count(e => e.Id == key) > 0;
-        }
+        
     }
 }

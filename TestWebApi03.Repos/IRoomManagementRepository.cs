@@ -8,6 +8,7 @@ namespace TestWebApi03.Repos
         IRoom AddInhabitant(int roomId, IResident dweller);
         IRoom AddRoom(IRoom r);
         bool DeleteRoom(int roomId);
+        bool DeleteInhabitant(int inhabitantId);
         IRoom EditRoom(IRoom r);
         IResident EditResident(IResident r);
         IQueryable<IResident> GetAllResidents();

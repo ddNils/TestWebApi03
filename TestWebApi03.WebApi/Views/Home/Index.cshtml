@@ -1,24 +1,196 @@
-﻿<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS, and JavaScript.</p>
-    <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+﻿
+<div class="jumbotron">
+    <h1>Room and Inhabitants Management</h1>
+    <p class="lead">Let's play with Rooms and Inhabitants</p>
 </div>
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>ASP.NET Web API is a framework that makes it easy to build HTTP services that reach
-        a broad range of clients, including browsers and mobile devices. ASP.NET Web API
-        is an ideal platform for building RESTful applications on the .NET Framework.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301870">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301871">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301872">Learn more &raquo;</a></p>
+<div id="container" ng-controller="RoomsController" ng-init="initialize()">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="row">
+                <h2>Add Room</h2>
+                <div class="col-md-6">
+                    <p ng-form="AddRoomForm">
+                        <div class="form-group">
+                            <label for="roomNameInput">Name:</label>
+                            <input class="form-control" id="roomNameInput" type="text" ng-model="newRoom.RoomName" placeholder="Raum" />
+                        </div>
+                        <div class="form-group">
+                            <label for="roomLocationInput">Stadt:</label>
+                            <input class="form-control" id="roomLocationInput" type="text" ng-model="newRoom.Location" placeholder="Stadt" />
+                        </div>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p>
+                        <div class="form-group">
+                            <label for="roomSizeInput">Größe:</label>
+                            <input class="form-control" id="roomSizeInput" type="text" ng-model="newRoom.SizeM2" placeholder="Größe in m²" />
+                        </div>
+                        <div class="form-group">
+                            <label for="roomFloorInput">Geschoß:</label>
+                            <select class="form-control" id="roomFloorInput" ng-model="newRoom.Floor" placeholder="Geschoß">
+                                <option value="0" label="Erdgeschoß"></option>
+                                <option value="1" label="1"></option>
+                                <option value="2" label="2"></option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <br />
+                            <button class="btn btn-primary pull-right" id="addRoomBtn" ng-click="addRoom()" ng-model="newRoom">Add Room</button>
+                        </div>
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div id="alertPlaceholder">
+
+                    </div>
+                    <div class="alert hide" id="alertDraft">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                        <strong>{{strongMessage}}</strong> <span>{{message}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <h3>Diese Räume stehen zur Verfügung</h3><span class="glyphicon glyphicon-star-empty pull-right" title="remove selection" ng-click="selectedRoom = null"></span>
+                    <table id="roomTable" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Bewohner</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="room in roomsList" ng-click="selectRoom(room)" ng-class="{success: room === selectedRoom}" jqyoui-droppable onDrop="dropResident">
+                                <td>{{room.RoomName}}</td>
+                                <td>{{room.Location}}</td>
+                                <td><span class="badge">{{room.Inhabitants.length}}</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4" ng-show="!(selectedRoom == null)">
+                    <h3>Inhabitants</h3>
+                    <ul class="list-group" ng-show="selectedRoom.Inhabitants.length > 0">
+                        <li ng-repeat="dweller in selectedRoom.Inhabitants" class="list-group-item">
+                            {{dweller.Title}} {{dweller.LastName}}, {{dweller.Name}}
+                            <span class="glyphicon glyphicon-share-alt pull-right"></span>
+                        </li>
+                    </ul>
+                    <span ng-show="selectedRoom.Inhabitants.length == 0">
+                        This room has no inhabitants
+                    </span>
+                </div>
+                <div class="col-md-8" ng-show="!(selectedRoom == null)">
+                    <h3>Delete Room</h3>
+                    <div>
+                        <dl class="dl-horizontal">
+                            <dt>Name</dt>
+                            <dd>{{selectedRoom.RoomName}}</dd>
+                            <dt>Stadt</dt>
+                            <dd>{{selectedRoom.Location}}</dd>
+                            <dt>Geschoß</dt>
+                            <dd>{{selectedRoom.Floor}}</dd>
+                            <dt>Größe</dt>
+                            <dd>{{selectedRoom.SizeM2}}</dd>
+                            <dt>Bewohner</dt>
+                            <dd>{{selectedRoom.Inhabitants.length}}</dd>
+                        </dl>
+                        <button class="btn btn-danger" ng-click="deleteRoom()">Delete Room</button>
+                    </div>
+                </div>
+                @*<div class="col-md-4 hide">
+                    <h3>Add Inhabitant</h3>
+                    <div ng-form="AddDwellerForm">
+                        <div class="form-group">
+                            <label for="inhabTitleSelect">Titel:</label>
+                            <select class="form-control" id="inhabTitleSelect" ng-model="newInhab.Title">
+                                <option>Frau</option>
+                                <option>Herr</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="inhabNameInput">Vorname:</label>
+                            <input type="text" id="inhabNameInput" class="form-control" ng-model="newInhab.Name" placeholder="Vorname" />
+                        </div>
+                        <div class="form-group">
+                            <label for="inhabLastNameInput">Nachname:</label>
+                            <input type="text" id="inhabLastNameInput" class="form-control" ng-model="newInhab.LastName" placeholder="Nachname" />
+                        </div>
+                        <div class="form-group">
+                            <label for="inhabJobInput">Beruf:</label>
+                            <input type="text" id="inhabJobInput" class="form-control" ng-model="newInhab.JobDescription" placeholder="Job Beschreibung" />
+                        </div>
+                        <button class="btn btn-success" ng-click="addInhabitant()">Add Inhabitant</button>
+                    </div>
+                </div>*@
+            </div>
+        </div>
+        <div class="col-md-3">
+            <h3>Remaining Inhabitants</h3>
+            <div class="list-group hoverable">
+                <div ng-repeat="dweller in dwellers" class="list-group-item"  data-drag="true" jqyoui-draggable>
+                    <strong>{{dweller.Title}} {{dweller.LastName}}, {{dweller.Name}}</strong>
+                    <p>{{dweller.JobDescription}}</p>
+                    <span class="glyphicon glyphicon-trash actionIcon" ng-click="deleteResident(dweller)"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <h3>Add Inhabitant</h3>
+            <div ng-form="AddResidentForm">
+                <div class="form-group">
+                    <label for="inhabTitleSelect">Titel:</label>
+                    <select class="form-control" id="inhabTitleSelect" ng-model="newInhab.Title">
+                        <option>Frau</option>
+                        <option>Herr</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inhabNameInput">Vorname:</label>
+                    <input type="text" id="inhabNameInput" class="form-control" ng-model="newInhab.Name" placeholder="Vorname" />
+                </div>
+                <div class="form-group">
+                    <label for="inhabLastNameInput">Nachname:</label>
+                    <input type="text" id="inhabLastNameInput" class="form-control" ng-model="newInhab.LastName" placeholder="Nachname" />
+                </div>
+                <div class="form-group">
+                    <label for="inhabJobInput">Beruf:</label>
+                    <input type="text" id="inhabJobInput" class="form-control" ng-model="newInhab.JobDescription" placeholder="Job Beschreibung" />
+                </div>
+                <button class="btn btn-success" ng-click="addInhabitant()">Add Inhabitant</button>
+            </div>
+        </div>
     </div>
 </div>
+<script type="text/javascript">
+    function activateUI() {
+        //$('.hoverable').children('div').draggable({
+        //    revert: "invalid",
+        //    zIndex: 100,
+        //    //helper: "clone",
+        //    containment: "#container",
+        //    scroll: false
+        //});
+
+        //$('#roomTable tbody tr').droppable({
+        //    hoverClass: 'inhabitant-flying-over',
+        //    over: function (event, ui) {
+        //        $(this).find('td').toggleClass('inhabitant-flying-over');
+        //    },
+        //    out: function (event, ui) {
+        //        $(this).find('td').toggleClass('inhabitant-flying-over');
+        //    },
+        //    drop: function (event, ui) {
+        //        $(this).find('td').removeClass('inhabitant-flying-over');
+        //        ui.draggable.hide();
+        //    }
+        //});
+    }
+
+</script>
