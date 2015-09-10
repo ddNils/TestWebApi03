@@ -43,14 +43,6 @@
             </div>
             <div class="row">
                 <div class="col-md-12">
-                    <div class="alert hide" id="alertDraft">
-                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                        <strong>{{strongMessage}}</strong> <span>{{message}}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-12">
                     <h3>Available Rooms</h3><span class="glyphicon glyphicon-star-empty pull-right" title="remove selection" ng-click="selectedRoom = null"></span>
                     <table id="roomTable" class="table table-hover">
                         <thead>
@@ -68,8 +60,16 @@
                             </tr>
                         </tbody>
                     </table>
-                    <div id="alertPlaceholder">
+                </div>
+            </div>
+            <div class="row">
+                <div id="alertPlaceholder">
 
+                </div>
+                <div class="col-md-12">
+                    <div class="alert hide" id="alertDraft">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                        <strong>{{strongMessage}}</strong> <span>{{message}}</span>
                     </div>
                 </div>
             </div>
@@ -79,7 +79,7 @@
                     <ul class="list-group" ng-show="selectedRoom.Inhabitants.length > 0">
                         <li ng-repeat="dweller in selectedRoom.Inhabitants" class="list-group-item">
                             {{dweller.Title}} {{dweller.LastName}}, {{dweller.Name}}
-                            <span class="glyphicon glyphicon-share-alt pull-right" title="remove Inhabitant from room" ng-click="deleteResident(dweller, selectedRoom)"></span>
+                            <span class="glyphicon glyphicon-share-alt pull-right actionIcon" title="remove Inhabitant from room" ng-click="deleteResident(dweller, selectedRoom)"></span>
                         </li>
                     </ul>
                     <span ng-show="selectedRoom.Inhabitants.length == 0">
@@ -142,7 +142,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <h3>Add Inhabitant</h3>
+            <h3>Add Inhabitant <span ng-show="!(selectedRoom == null)">to Room</span></h3>
             <div ng-form="AddResidentForm">
                 <div class="form-group">
                     <label for="inhabTitleSelect">Titel:</label>
