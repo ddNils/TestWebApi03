@@ -88,8 +88,21 @@
 
       }
 
-      $scope.dropResident = function (room) {
-
+      $scope.dropResident = function (event, ui, room) {
+          $(this).find('td').removeClass('inhabitant-flying-over');
+          ui.draggable.hide();
+          // Add Resident to room
+          var resident = ui.draggable.scope().dweller;
+          resident.RoomId = room.Id;
+          $http.post("/api/Residents", resident).success(function (data, status) {
+              customSuccess("Resident was added to room", "Success!");
+              console.log("STATUS: " + status + " data: " + JSON.stringify(data));
+              $scope.dwellers.splice($scope.dwellers.indexOf(resident), 1);
+              $filter("filter")($scope.roomsList, { Id: data.Id })[0].Inhabitants.push(resident);
+          }).error(function (data, status) {
+              customError("Could not add Resident to Room", "Error");
+              console.log("STATUS: " + status + " data: " + JSON.stringify(data));
+          });
       }
 
       $scope.deleteRoom = function () {
@@ -101,20 +114,34 @@
               customSuccess("Room was deleted", "Success");
 
           }).error(function (data, status) {
-              customError("Could not delete Room", "Error");
+              customError("Could not delete Room: " + data.ExceptionMessage, "Error");
               console.log("STATUS: " + status + " data: " + JSON.stringify(data));
           });
       }
 
-      $scope.deleteResident = function (dweller) {
-          $http.delete("/api/Residents/" + dweller.Id).success(function (data, status) {
-              console.log("STATUS: " + status + " data: " + JSON.stringify(data));
-              $scope.dwellers.splice($scope.dwellers.indexOf(dweller), 1);
-              customSuccess("Resident was deleted", "Success!");
-          }).error(function (data, status) {
-              customError("Could not delete Resident", "Error");
-              console.log("STATUS: " + status + " data: " + JSON.stringify(data));
-          });
+      $scope.deleteResident = function (dweller, room) {
+          if (room) {
+              $http.patch("/api/Residents/" + room.Id, dweller).success(function (data, status) {
+                  customSuccess("Resident was removed from Room", "Success");
+                  // update dwellers
+                  $scope.dwellers.push(dweller);
+                  // update roomsList[xxx].Inhabitants (split)
+                  var inhabIndex =$filter("filter")($scope.roomsList, { Id: data.Id })[0].Inhabitants.indexOf(dweller);
+                  $filter("filter")($scope.roomsList, { Id: data.Id })[0].Inhabitants.splice(inhabIndex, 1);
+              }).error(function (data, status) {
+                  customError("Could not remove Resident from Room", "Error");
+                  console.log("STATUS: " + status + " data: " + JSON.stringify(data));
+              });
+          } else {
+              $http.delete("/api/Residents/" + dweller.Id).success(function (data, status) {
+                  console.log("STATUS: " + status + " data: " + JSON.stringify(data));
+                  $scope.dwellers.splice($scope.dwellers.indexOf(dweller), 1);
+                  customSuccess("Resident was deleted", "Success!");
+              }).error(function (data, status) {
+                  customError("Could not delete Resident", "Error");
+                  console.log("STATUS: " + status + " data: " + JSON.stringify(data));
+              });
+          }
       }
 
       $scope.initialize = function () {

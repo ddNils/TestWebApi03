@@ -43,6 +43,17 @@ namespace TestWebApi03.WebApi.Controllers
             return request.CreateErrorResponse(HttpStatusCode.BadRequest, "Resident was null");
         }
 
+        public HttpResponseMessage Patch(HttpRequestMessage request, int id, [FromBody]Models.ResidentViewModel resident)
+        {
+            if (resident != null)
+            {
+                // id should be room id
+                var room = _RoomManagement.RemoveInhabitant(id, resident);
+                return request.CreateResponse(HttpStatusCode.Accepted, room);
+            }
+            return request.CreateErrorResponse(HttpStatusCode.BadRequest, "Resident was null");
+        }
+
         // PUT: api/Residents
         public HttpResponseMessage Put(HttpRequestMessage request, [FromBody]Models.ResidentViewModel resident)
         {

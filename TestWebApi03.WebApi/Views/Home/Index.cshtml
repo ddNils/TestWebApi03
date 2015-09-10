@@ -43,9 +43,6 @@
             </div>
             <div class="row">
                 <div class="col-md-12">
-                    <div id="alertPlaceholder">
-
-                    </div>
                     <div class="alert hide" id="alertDraft">
                         <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                         <strong>{{strongMessage}}</strong> <span>{{message}}</span>
@@ -54,23 +51,26 @@
             </div>
             <div class="row">
                 <div class="col-md-12">
-                    <h3>Diese Räume stehen zur Verfügung</h3><span class="glyphicon glyphicon-star-empty pull-right" title="remove selection" ng-click="selectedRoom = null"></span>
+                    <h3>Available Rooms</h3><span class="glyphicon glyphicon-star-empty pull-right" title="remove selection" ng-click="selectedRoom = null"></span>
                     <table id="roomTable" class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Name</th>
                                 <th>Location</th>
-                                <th>Bewohner</th>
+                                <th>Inhabitants</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="room in roomsList" ng-click="selectRoom(room)" ng-class="{success: room === selectedRoom}" jqyoui-droppable onDrop="dropResident">
+                            <tr ng-repeat="room in roomsList" ng-click="selectRoom(room)" ng-class="{success: room === selectedRoom}" ng-model="room" data-drop="true" data-jqyoui-options="{hoverClass: 'inhabitant-flying-over'}" jqyoui-droppable="{onDrop: 'dropResident(room)'}">
                                 <td>{{room.RoomName}}</td>
                                 <td>{{room.Location}}</td>
                                 <td><span class="badge">{{room.Inhabitants.length}}</span></td>
                             </tr>
                         </tbody>
                     </table>
+                    <div id="alertPlaceholder">
+
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -79,7 +79,7 @@
                     <ul class="list-group" ng-show="selectedRoom.Inhabitants.length > 0">
                         <li ng-repeat="dweller in selectedRoom.Inhabitants" class="list-group-item">
                             {{dweller.Title}} {{dweller.LastName}}, {{dweller.Name}}
-                            <span class="glyphicon glyphicon-share-alt pull-right"></span>
+                            <span class="glyphicon glyphicon-share-alt pull-right" title="remove Inhabitant from room" ng-click="deleteResident(dweller, selectedRoom)"></span>
                         </li>
                     </ul>
                     <span ng-show="selectedRoom.Inhabitants.length == 0">
@@ -134,7 +134,7 @@
         <div class="col-md-3">
             <h3>Remaining Inhabitants</h3>
             <div class="list-group hoverable">
-                <div ng-repeat="dweller in dwellers" class="list-group-item"  data-drag="true" jqyoui-draggable>
+                <div ng-repeat="dweller in dwellers" class="list-group-item"  data-drag="true" jqyoui-draggable="{animate: true}" data-jqyoui-options="{revert: 'invalid', containment: '#container'}">
                     <strong>{{dweller.Title}} {{dweller.LastName}}, {{dweller.Name}}</strong>
                     <p>{{dweller.JobDescription}}</p>
                     <span class="glyphicon glyphicon-trash actionIcon" ng-click="deleteResident(dweller)"></span>
@@ -192,5 +192,6 @@
         //    }
         //});
     }
+
 
 </script>
